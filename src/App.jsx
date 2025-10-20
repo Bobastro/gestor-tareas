@@ -1,56 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, X, GripVertical, Edit2, Trash2, Calendar, Flag, Tag } from 'lucide-react';
 
 export default function App() {
-  const [boards, setBoards] = useState([
-    {
-      id: 1,
-      title: 'Por Hacer',
-      cards: [
-        { 
-          id: 1, 
-          title: 'Diseñar mockups', 
-          description: 'Crear diseños iniciales del proyecto',
-          priority: 'high',
-          dueDate: '2025-10-20',
-          tags: ['diseño', 'urgente']
-        },
-        { 
-          id: 2, 
-          title: 'Configurar proyecto', 
-          description: 'Inicializar repositorio y dependencias',
-          priority: 'medium',
-          dueDate: '2025-10-15',
-          tags: ['desarrollo']
-        }
-      ]
-    },
-    {
-      id: 2,
-      title: 'En Progreso',
-      cards: [
-        { 
-          id: 3, 
-          title: 'Desarrollar componentes', 
-          description: 'Crear componentes React principales',
-          priority: 'high',
-          dueDate: '2025-10-18',
-          tags: ['desarrollo', 'frontend']
-        }
-      ]
-    },
-    {
-      id: 3,
-      title: 'Completado',
-      cards: []
+  // Cargar datos desde localStorage o usar datos iniciales
+  const getInitialBoards = () => {
+    const savedBoards = localStorage.getItem('taskBoards');
+    if (savedBoards) {
+      return JSON.parse(savedBoards);
     }
-  ]);
+    // Datos iniciales por defecto
+    return [
+      {
+        id: 1,
+        title: 'Por Hacer',
+        cards: [
+          { 
+            id: 1, 
+            title: 'Diseñar mockups', 
+            description: 'Crear diseños iniciales del proyecto',
+            priority: 'high',
+            dueDate: '2025-10-20',
+            tags: ['diseño', 'urgente']
+          },
+          { 
+            id: 2, 
+            title: 'Configurar proyecto', 
+            description: 'Inicializar repositorio y dependencias',
+            priority: 'medium',
+            dueDate: '2025-10-15',
+            tags: ['desarrollo']
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: 'En Progreso',
+        cards: [
+          { 
+            id: 3, 
+            title: 'Desarrollar componentes', 
+            description: 'Crear componentes React principales',
+            priority: 'high',
+            dueDate: '2025-10-18',
+            tags: ['desarrollo', 'frontend']
+          }
+        ]
+      },
+      {
+        id: 3,
+        title: 'Completado',
+        cards: []
+      }
+    ];
+  };
 
+  const [boards, setBoards] = useState(getInitialBoards);
   const [newBoardTitle, setNewBoardTitle] = useState('');
   const [showNewBoard, setShowNewBoard] = useState(false);
   const [editingCard, setEditingCard] = useState(null);
   const [draggedCard, setDraggedCard] = useState(null);
   const [draggedOverBoard, setDraggedOverBoard] = useState(null);
+
+  // Guardar en localStorage cada vez que cambian los boards
+  useEffect(() => {
+    localStorage.setItem('taskBoards', JSON.stringify(boards));
+  }, [boards]);
 
   const priorityColors = {
     low: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-300' },
@@ -187,6 +201,13 @@ export default function App() {
     today.setHours(0, 0, 0, 0);
     const due = new Date(dueDate);
     return due < today;
+  };
+
+  const clearAllData = () => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar todas las tareas y tableros? Esta acción no se puede deshacer.')) {
+      localStorage.removeItem('taskBoards');
+      window.location.reload();
+    }
   };
 
   const EditCardModal = ({ card, boardId, onClose }) => {
@@ -343,9 +364,19 @@ export default function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-6">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Mi Gestor de Tareas</h1>
-          <p className="text-blue-100">Organiza tus proyectos con prioridades, fechas y etiquetas</p>
+        <header className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">Mi Gestor de Tareas</h1>
+            <p className="text-blue-100">Organiza tus proyectos con prioridades, fechas y etiquetas</p>
+          </div>
+          <button
+            onClick={clearAllData}
+            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors flex items-center gap-2"
+            title="Eliminar todos los datos"
+          >
+            <Trash2 size={18} />
+            Limpiar Todo
+          </button>
         </header>
 
         <div className="flex gap-6 overflow-x-auto pb-6">
